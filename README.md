@@ -30,16 +30,17 @@ THEN I am prompted to select an employee to update and their new role and this i
 
 ### Demonstration 
 
-
+https://app.castify.com/view/45267e81-8b17-4300-a3e5-8d4bd3dcc42f
 
 ### Dependencies
 
 Windows 10 or the latest Mac OS.
 
-### Technoloiges
+### Technologies
 
   - Inquirer 2.8.3
-  - fs
+  - console.table
+  - mysql2
 
 ## Help
 
