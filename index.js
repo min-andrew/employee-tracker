@@ -2,6 +2,10 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
+// list of variables 
+var roles;
+var employees;
+var departments;
 
 // Connect to database
 const db = mysql.createConnection(
@@ -19,7 +23,6 @@ const db = mysql.createConnection(
 // Connecting to the database 
 db.connect((err) => {
     if (err) throw err;
-    console.log("Connected to the Database.");
     main();
 });
 
@@ -62,11 +65,6 @@ const main = function () {
         });
 }
 
-// list of variables 
-var roles;
-var employees;
-var departments;
-
 // function to get choices of roles 
 function currentRoles() {
     roles = [];
@@ -88,7 +86,6 @@ function currentEmployees() {
             employees.push(input[i].id + ' ' + input[i].first_name + ' ' + input[i].last_name)
         };
     });
-    console.table(employees);
     return employees;
 };
 
@@ -106,7 +103,7 @@ function currentDepartments() {
 
 // function to view all employees 
 function viewAllEmployees() {
-    db.query('SELECT * FROM employee', (err, input) => {
+    db.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, employee.manager_id AS manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id', (err, input) => {
         if (err) throw err;
         console.table(input);
         main();
@@ -154,25 +151,32 @@ function addEmployee() {
 
 // function to update employee role 
 function updateEmployeeRole() {
-    currentEmployees();
     currentRoles();
+    currentEmployees();
     inquirer
         .prompt([
             {
+                type: 'input',
+                message: 'What is your name?',
+                name: 'name'
+            },
+            {
                 type: 'list',
-                message: 'What is the name of employee that is being updated?',
-                name: 'nameUpdate',
+                message: 'Name of employee that is being updated?',
+                name: 'nameupdate',
                 choices: employees
             },
             {
                 type: 'list',
-                message: 'Which role would you like to update this to?',
-                name: 'roleUpdate',
+                message: 'Role that needs to be updated to?',
+                name: 'roleupdate',
                 choices: roles
             }
         ])
         .then(function (input) {
-            db.query('UPDATE employee SET role_id=? WHERE first_name=?', [input.nameUpdate, input.roleUpdate], function (err, res) {
+            var ri = input.roleupdate.split(' ');
+            var ei = input.nameupdate.split(' ');
+            db.query('UPDATE employee SET role_id=? WHERE first_name=?', [ri[0], ei[1]], function (err, res) {
                 if (err) throw err;
                 console.table(res);
                 main();
@@ -182,7 +186,7 @@ function updateEmployeeRole() {
 
 // function to view all roles 
 function viewAllRoles() {
-    db.query('SELECT * FROM role', (err, input) => {
+    db.query('SELECT role.id, role.title, department.name AS department, role.salary FROM role JOIN department ON role.department_id=department.id', (err, input) => {
         if (err) throw err;
         console.table(input);
         main();
